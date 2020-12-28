@@ -7,8 +7,15 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-io.on('connection', (socekt) => {
+io.on('connection', (socket) => {
     console.log('connected');
+    socket.on('disconnect', () => {
+        console.log('disconnected');
+    });
+    socket.on('chat message', (msg) => {
+        console.log('msg:', msg);
+        io.emit('chat message', msg);
+    });
 });
 
 httpServer.listen(3000, () => {

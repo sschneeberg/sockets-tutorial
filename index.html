@@ -45,10 +45,21 @@
     </head>
     <body>
         <ul id="messages"></ul>
-        <form action=""><input id="m" autocomplete="off" /><button>Send</button></form>
+        <form id="form" action=""><input id="m" autocomplete="off" /><button>Send</button></form>
     </body>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        var socket = io();
+        const socket = io();
+        document.getElementById('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            socket.emit('chat message', document.getElementById('m').value);
+            document.getElementById('m').value = '';
+            return false;
+        });
+        socket.on('chat message', (msg) => {
+            const newMsg = document.createElement('li');
+            newMsg.innerText = msg;
+            document.getElementById('messages').appendChild(newMsg);
+        });
     </script>
 </html>
