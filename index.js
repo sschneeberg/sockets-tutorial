@@ -7,7 +7,10 @@ const io = require('socket.io')(httpServer, {
         origin: '*'
     }
 });
-const STATIC_CHANNELS = ['notifcations', 'chat'];
+const STATIC_CHANNELS = [
+    { id: 1, name: 'channel 1', participants: 10 },
+    { id: 2, name: 'channel 2', participants: 3 }
+];
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -34,6 +37,30 @@ io.on('connection', (socket) => {
 
     //only to the client that connected to this socket
     socket.emit('connection', null);
+    socket.on('channel-join', (id) => {
+        console.log('channel join: ', id);
+        STATIC_CHANNELS.forEach((c) => {
+            if (c.id === id) {
+                if (c.sockets.indexOf(socket.id) == -1) {
+                    c.sockets.push(socket.id);
+                    c.participants++;
+                    io.emit('channel', c);
+                }
+            } else {
+                let index = c.sockets.indexOf(socket.id);
+                if (index != -1) {
+                    c.sockets.splice(index, 1);
+                    c.participants--;
+                    io.emit('channel', c);
+                }
+            }
+        });
+
+        return id;
+    });
+    socket.on('send-message', (message) => {
+        io.emit('message', message);
+    });
 });
 
 httpServer.listen(8000, () => {
